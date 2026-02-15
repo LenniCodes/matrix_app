@@ -11,9 +11,8 @@ import "package:open_wearable/apps/pixelated_games/view/matrix_view.dart";
 import "package:open_wearable/apps/posture_tracker/model/attitude_tracker.dart";
 import "package:provider/provider.dart";
 
-// TODO: format code
-// TODO: comment code
-
+/// Main view for the pixelated games application
+/// Manages game selection, rendering, and user interaction through head gestures
 class PixelatedGamesView extends StatefulWidget {
   final AttitudeTracker _tracker;
 
@@ -24,10 +23,15 @@ class PixelatedGamesView extends StatefulWidget {
 }
 
 class _PixelatedGamesViewState extends State<PixelatedGamesView> {
+  /// Key to access the matrix view state for rendering
   final GlobalKey<MatrixViewState> matrixKey = GlobalKey();
+  /// The current active game model
   late PixelatedGameModel currGameModel;
+  /// Whether the game is currently running
   bool running = false;
+  /// Whether the app is in calibration mode
   bool calibrating = false;
+  /// Timer for the game loop
   Timer? _gameTimer;
 
   List<GameInfo> availableGames = [
@@ -52,7 +56,7 @@ class _PixelatedGamesViewState extends State<PixelatedGamesView> {
     super.initState();
     currGameModel = availableGames[0].constructor();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      switchToGame(
+      _switchToGame(
           availableGames[0].gameType, GamePostureTracker(widget._tracker));
     });
   }
@@ -77,23 +81,7 @@ class _PixelatedGamesViewState extends State<PixelatedGamesView> {
             children: [
               _buildGameSelection(gamePostureTracker),
               Center(child: _buildContentView(gamePostureTracker)),
-              running
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 30),
-                      child: SizedBox(
-                        width: 150,
-                        height: 150,
-                        child: CustomPaint(
-                          painter: ControlStickPainter(
-                            roll: gamePostureTracker.attitude.roll,
-                            pitch: gamePostureTracker.attitude.pitch,
-                            rollThreshold: GamePostureTracker.rollThreshold,
-                            pitchThreshold: GamePostureTracker.pitchThreshold,
-                          ),
-                        ),
-                      ),
-                    )
-                  : SizedBox(),
+              running ? _buildControlStick(gamePostureTracker) : SizedBox(),
             ],
           ),
           backgroundColor: Theme.of(context).colorScheme.surface,
@@ -102,40 +90,7 @@ class _PixelatedGamesViewState extends State<PixelatedGamesView> {
     );
   }
 
-  Widget _buildCalibrationOverlay(GamePostureTracker gameTracker) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-          child: Text(
-            "Adjust your posture to a neutral position and press continue",
-            style: TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        Expanded(
-          child: Image.asset(
-            "lib/apps/posture_tracker/assets/Head_Front.png",
-            width: 200,
-            height: 200,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 30),
-          child: ElevatedButton(
-            onPressed: () {
-              finishCalibration(gameTracker);
-              startGame(gameTracker);
-            },
-            child: Text("Continue"),
-          ),
-        ),
-      ],
-    );
-  }
-
+  /// Builds the main game display area with matrix view and overlays
   Widget _buildContentView(GamePostureTracker gameTracker) {
     return Container(
       width: 400,
@@ -163,8 +118,28 @@ class _PixelatedGamesViewState extends State<PixelatedGamesView> {
     );
   }
 
+  /// Displays a control stick showing the current head movement input
+  Widget _buildControlStick(GamePostureTracker gamePostureTracker) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 30),
+      child: SizedBox(
+        width: 150,
+        height: 150,
+        child: CustomPaint(
+          painter: ControlStickPainter(
+            roll: gamePostureTracker.attitude.roll,
+            pitch: gamePostureTracker.attitude.pitch,
+            rollThreshold: GamePostureTracker.rollThreshold,
+            pitchThreshold: GamePostureTracker.pitchThreshold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Shows the game preview screen with title and description before play
   Widget _buildPlayOverview(GamePostureTracker gameTracker) {
-    GameInfo gameInfo = getGameInfo(currGameModel.runtimeType);
+    GameInfo gameInfo = _getGameInfo(currGameModel.runtimeType);
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -190,11 +165,12 @@ class _PixelatedGamesViewState extends State<PixelatedGamesView> {
     );
   }
 
+  /// Builds the play button that starts calibration and preview
   Widget _buildPlayButton(GamePostureTracker gameTracker) {
     return GestureDetector(
       onTap: () {
-        startCalibration(gameTracker);
-        previewGame(gameTracker);
+        _startCalibration(gameTracker);
+        _previewGame(gameTracker);
       },
       child: Container(
         width: 70,
@@ -214,6 +190,42 @@ class _PixelatedGamesViewState extends State<PixelatedGamesView> {
     );
   }
 
+  /// Shows the calibration screen where user sets neutral head position
+  Widget _buildCalibrationOverlay(GamePostureTracker gameTracker) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
+          child: Text(
+            "Adjust your posture to a neutral position and press continue",
+            style: TextStyle(
+                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Expanded(
+          child: Image.asset(
+            "lib/apps/posture_tracker/assets/Head_Front.png",
+            width: 200,
+            height: 200,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 30),
+          child: ElevatedButton(
+            onPressed: () {
+              _finishCalibration(gameTracker);
+              _startGame(gameTracker);
+            },
+            child: Text("Continue"),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Builds the game selection row with icons for each available game
   Widget _buildGameSelection(GamePostureTracker gameTracker) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -222,7 +234,7 @@ class _PixelatedGamesViewState extends State<PixelatedGamesView> {
         return Padding(
           padding: EdgeInsets.fromLTRB(20, 8, 20, 20),
           child: GestureDetector(
-            onTap: () => switchToGame(gameInfo.gameType, gameTracker),
+            onTap: () => _switchToGame(gameInfo.gameType, gameTracker),
             child: Column(
               children: [
                 AnimatedOpacity(
@@ -255,43 +267,26 @@ class _PixelatedGamesViewState extends State<PixelatedGamesView> {
     );
   }
 
-  void switchToGame(Type gameType, GamePostureTracker gameTracker) {
+  /// Switches to a different game and initializes it
+  /// Stops current game if running and resets the matrix
+  void _switchToGame(Type gameType, GamePostureTracker gameTracker) {
     if (running) {
-      stopGame(gameTracker);
+      _stopGame(gameTracker);
       matrixKey.currentState?.reset();
     }
 
     setState(() {
       calibrating = false;
-      currGameModel = getGameInfo(gameType).constructor();
+      currGameModel = _getGameInfo(gameType).constructor();
 
       currGameModel.initGame();
-      previewGame(gameTracker);
+      _previewGame(gameTracker);
     });
   }
 
-  void startGameClock(GamePostureTracker gameTracker) {
-    _gameTimer = Timer.periodic(Duration(milliseconds: 50), (timer) {
-      if (!running || matrixKey.currentState == null) {
-        timer.cancel();
-      } else {
-        currGameModel
-            .render(gameTracker.currentControl, matrixKey.currentState!, () {
-          stopGame(gameTracker);
-          currGameModel = getGameInfo(currGameModel.runtimeType).constructor();
-          currGameModel.initGame();
-        });
-      }
-    });
-  }
-
-  GameInfo getGameInfo(Type gameType) {
-    return availableGames.firstWhere(
-      (element) => element.gameType == gameType,
-    );
-  }
-
-  void startGame(GamePostureTracker gameTracker) async {
+  /// Starts the game loop and tracking
+  /// Adds a delay before starting the game timer
+  void _startGame(GamePostureTracker gameTracker) async {
     if (!gameTracker.isTracking) {
       gameTracker.startTracking();
     }
@@ -301,10 +296,11 @@ class _PixelatedGamesViewState extends State<PixelatedGamesView> {
     });
 
     await Future.delayed(Duration(milliseconds: 500));
-    startGameClock(gameTracker);
+    _startGameClock(gameTracker);
   }
 
-  void stopGame(GamePostureTracker gameTracker) {
+  /// Stops the game loop and tracking
+  void _stopGame(GamePostureTracker gameTracker) {
     if (gameTracker.isTracking) {
       gameTracker.stopTracking();
     }
@@ -314,25 +310,52 @@ class _PixelatedGamesViewState extends State<PixelatedGamesView> {
     });
   }
 
-  void startCalibration(GamePostureTracker gameTracker) {
-    // start tracker so calibrating can happen
+  /// Begins the calibration process by starting tracking and showing overlay
+  void _startCalibration(GamePostureTracker gameTracker) {
     if (!gameTracker.isTracking) {
       gameTracker.startTracking();
     }
 
+    // Display calibration overlay
     setState(() {
       calibrating = true;
     });
   }
 
-  void finishCalibration(GamePostureTracker gameTracker) {
+  /// Completes calibration by setting the current head position as neutral
+  void _finishCalibration(GamePostureTracker gameTracker) {
     gameTracker.calibrate();
     setState(() {
       calibrating = false;
     });
   }
 
-  void previewGame(GamePostureTracker gameTracker) {
+  /// Starts the game update timer that renders at 20 FPS
+  /// Calls game render method and handles game over
+  void _startGameClock(GamePostureTracker gameTracker) {
+    _gameTimer = Timer.periodic(Duration(milliseconds: 50), (timer) {
+      if (!running || matrixKey.currentState == null) {
+        timer.cancel();
+      } else {
+        currGameModel
+            .render(gameTracker.currentControl, matrixKey.currentState!, () {
+          _stopGame(gameTracker);
+          currGameModel = _getGameInfo(currGameModel.runtimeType).constructor();
+          currGameModel.initGame();
+        });
+      }
+    });
+  }
+
+  /// Retrieves game information for the specified game type
+  GameInfo _getGameInfo(Type gameType) {
+    return availableGames.firstWhere(
+      (element) => element.gameType == gameType,
+    );
+  }
+
+  /// Renders a preview of the current game on the matrix
+  void _previewGame(GamePostureTracker gameTracker) {
     if (matrixKey.currentState != null) {
       currGameModel.previewRender(
         gameTracker.currentControl,

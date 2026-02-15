@@ -2,19 +2,26 @@ import "package:flutter/material.dart";
 import "package:open_wearable/apps/posture_tracker/model/attitude.dart";
 import "package:open_wearable/apps/posture_tracker/model/attitude_tracker.dart";
 
+/// Tracks head posture and converts it to game control inputs
+/// Monitors head roll and pitch to determine directional controls
 class GamePostureTracker with ChangeNotifier {
+  /// Head roll threshold for triggering left/right controls (in radians)
   static const double rollThreshold = 0.4;
+  /// Head pitch threshold for triggering up/down controls (in radians)
   static const double pitchThreshold = 0.16;
 
+  /// The current game control based on head posture
   GameControl _currentControl = GameControl.neutral;
   GameControl get currentControl => _currentControl;
 
+  /// The current head attitude measurement
   Attitude _attitude = Attitude();
   Attitude get attitude => _attitude;
   
   bool get isTracking => _attitudeTracker.isTracking;
   bool get isAvailable => _attitudeTracker.isAvailable;
 
+  /// Underlying attitude tracker for head movement
   final AttitudeTracker _attitudeTracker;
   bool _isDisposed = false;
 
@@ -29,6 +36,7 @@ class GamePostureTracker with ChangeNotifier {
     });
   }
 
+  /// Starts tracking head movements
   void startTracking() {
     _attitudeTracker.start();
     if (!_isDisposed) {
@@ -36,6 +44,7 @@ class GamePostureTracker with ChangeNotifier {
     }
   }
 
+  /// Stops tracking head movements
   void stopTracking() {
     _attitudeTracker.stop();
     if (!_isDisposed) {
@@ -43,6 +52,7 @@ class GamePostureTracker with ChangeNotifier {
     }
   }
 
+  /// Calibrates the current head position as neutral
   void calibrate() {
     _attitudeTracker.calibrateToCurrentAttitude();
   }
@@ -56,6 +66,7 @@ class GamePostureTracker with ChangeNotifier {
   }
 }
 
+/// Enum representing the possible game control directions
 enum GameControl {
   neutral,
   left,
@@ -64,6 +75,7 @@ enum GameControl {
   down
 }
 
+/// Converts head attitude measurements to game control inputs
 GameControl getGameControlFromAttitude(Attitude attitude) {
    if (attitude.roll > GamePostureTracker.rollThreshold) {
     return GameControl.right;
