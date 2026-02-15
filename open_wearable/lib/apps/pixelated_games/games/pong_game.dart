@@ -11,13 +11,16 @@ class PongGame extends PixelatedGameModel {
 
   /// Timestamp of the last game update
   late int lastUpdate;
+
   /// Timestamp of the last ball position update
   late int lastBallUpdate;
 
   /// X position of the top paddle
   int topPaddleX = 0;
+
   /// X position of the bottom paddle
   int bottomPaddleX = 0;
+
   /// Width of the paddles
   int paddleWidth = 4;
 
@@ -26,6 +29,7 @@ class PongGame extends PixelatedGameModel {
 
   /// Current position of the ball
   Offset ballPos = Offset(0, 0);
+
   /// Previous positions of the ball for trail effect
   List<Offset> ballTrail = [];
 
@@ -44,6 +48,7 @@ class PongGame extends PixelatedGameModel {
 
   /// Current game speed
   late int currSpeed;
+
   /// Number of successful paddle hits
   int hits = 0;
 
@@ -133,7 +138,7 @@ class PongGame extends PixelatedGameModel {
       }
 
       // Update ball trail for the visual effect
-      if(ballPos != (ballTrail.isNotEmpty ? ballTrail.last : null)) {
+      if (ballPos != (ballTrail.isNotEmpty ? ballTrail.last : null)) {
         ballTrail.add(ballPos);
         if (ballTrail.length > trailLength) {
           ballTrail.removeAt(0);
@@ -203,7 +208,9 @@ class PongGame extends PixelatedGameModel {
     for (int i = 0; i < ballTrail.length - 1; i++) {
       double opacity = (i + 1) / ballTrail.length;
       matrixState.drawPixelFromOffset(
-          ballTrail[i], Colors.white.withAlpha((opacity * 100).toInt()),);
+        ballTrail[i],
+        Colors.white.withAlpha((opacity * 100).toInt()),
+      );
     }
   }
 

@@ -13,20 +13,25 @@ class SnakeGame extends PixelatedGameModel {
 
   /// Map of snake length to game speed in milliseconds
   final Map<int, int> speedSteps = {0: 350, 10: 320, 20: 290, 28: 260};
+
   /// Current game speed
   late int currSpeed;
 
   /// Current position of the apple
   late Offset applePos;
+
   /// Last update timestamp
   late int lastUpdate;
 
   /// Previous game control input
   GameControl lastControl = GameControl.neutral;
+
   /// Current direction the snake is moving
   Offset currDirection = Offset(1, 0);
+
   /// List of segments making up the snake body
   List<Offset> snakeBody = [];
+
   /// List of available empty positions on the matrix
   List<Offset> free = [];
 

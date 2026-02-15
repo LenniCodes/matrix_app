@@ -7,6 +7,7 @@ import "package:open_wearable/apps/posture_tracker/model/attitude_tracker.dart";
 class GamePostureTracker with ChangeNotifier {
   /// Head roll threshold for triggering left/right controls (in radians)
   static const double rollThreshold = 0.4;
+
   /// Head pitch threshold for triggering up/down controls (in radians)
   static const double pitchThreshold = 0.16;
 
@@ -17,7 +18,7 @@ class GamePostureTracker with ChangeNotifier {
   /// The current head attitude measurement
   Attitude _attitude = Attitude();
   Attitude get attitude => _attitude;
-  
+
   bool get isTracking => _attitudeTracker.isTracking;
   bool get isAvailable => _attitudeTracker.isAvailable;
 
@@ -29,7 +30,10 @@ class GamePostureTracker with ChangeNotifier {
     _attitudeTracker.listen((attitude) {
       _currentControl = getGameControlFromAttitude(attitude);
       _attitude = Attitude(
-          roll: attitude.roll, pitch: attitude.pitch, yaw: attitude.yaw,);
+        roll: attitude.roll,
+        pitch: attitude.pitch,
+        yaw: attitude.yaw,
+      );
       if (!_isDisposed) {
         notifyListeners();
       }
@@ -67,21 +71,15 @@ class GamePostureTracker with ChangeNotifier {
 }
 
 /// Enum representing the possible game control directions
-enum GameControl {
-  neutral,
-  left,
-  right,
-  up,
-  down
-}
+enum GameControl { neutral, left, right, up, down }
 
 /// Converts head attitude measurements to game control inputs
 GameControl getGameControlFromAttitude(Attitude attitude) {
-   if (attitude.roll > GamePostureTracker.rollThreshold) {
+  if (attitude.roll > GamePostureTracker.rollThreshold) {
     return GameControl.right;
   } else if (attitude.roll < -GamePostureTracker.rollThreshold) {
     return GameControl.left;
-  } else if(attitude.pitch > GamePostureTracker.pitchThreshold) {
+  } else if (attitude.pitch > GamePostureTracker.pitchThreshold) {
     return GameControl.down;
   } else if (attitude.pitch < -GamePostureTracker.pitchThreshold) {
     return GameControl.up;

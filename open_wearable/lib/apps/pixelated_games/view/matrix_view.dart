@@ -14,8 +14,10 @@ class MatrixView extends StatefulWidget {
 class MatrixViewState extends State<MatrixView> {
   /// Previous frame pixels for diff-based rendering
   List<List<Color>> oldPixels = [];
+
   /// Current frame pixels to be rendered
   late List<List<Color>> pixels;
+
   /// Flag to trigger repaint on next frame
   bool shouldRepaint = false;
 
@@ -80,7 +82,7 @@ class MatrixViewState extends State<MatrixView> {
         );
         clear();
         setState(() {
-        shouldRepaint = false;
+          shouldRepaint = false;
         });
       }
     });
@@ -91,8 +93,10 @@ class MatrixViewState extends State<MatrixView> {
 class MatrixPainter extends CustomPainter {
   /// Current frame pixels to draw
   final List<List<Color>> pixels;
+
   /// Previous frame pixels for comparison
   final List<List<Color>> oldPixels;
+
   /// Whether to repaint the matrix
   final bool repaint;
 
@@ -122,5 +126,6 @@ class MatrixPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(MatrixPainter oldDelegate) => repaint && !oldDelegate.repaint;
+  bool shouldRepaint(MatrixPainter oldDelegate) =>
+      repaint && !oldDelegate.repaint;
 }

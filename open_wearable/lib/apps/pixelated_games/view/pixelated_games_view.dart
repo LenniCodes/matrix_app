@@ -25,12 +25,16 @@ class PixelatedGamesView extends StatefulWidget {
 class _PixelatedGamesViewState extends State<PixelatedGamesView> {
   /// Key to access the matrix view state for rendering
   final GlobalKey<MatrixViewState> matrixKey = GlobalKey();
+
   /// The current active game model
   late PixelatedGameModel currGameModel;
+
   /// Whether the game is currently running
   bool running = false;
+
   /// Whether the app is in calibration mode
   bool calibrating = false;
+
   /// Timer for the game loop
   Timer? _gameTimer;
 

@@ -8,8 +8,11 @@ abstract class PixelatedGameModel {
 
   /// Renders the current frame of the game
   /// Updates game state based on player control input
-  void render(GameControl currentControl, MatrixViewState matrixState,
-      Function() onStop,);
+  void render(
+    GameControl currentControl,
+    MatrixViewState matrixState,
+    Function() onStop,
+  );
 
   /// Initializes the game state
   void initGame();
